@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PortfolioTrack — Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJYGxyFYHSs-wW16jrAnwUz-XlnvZKbgQ",
+    authDomain: "vibe-demo-38a40.firebaseapp.com",
+    databaseURL: "https://vibe-demo-38a40-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "vibe-demo-38a40",
+    storageBucket: "vibe-demo-38a40.firebasestorage.app",
+    messagingSenderId: "871716701408",
+    appId: "1:871716701408:web:baf4b16c5300868be7bc85"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.submitWord = function() {
+    const input = document.getElementById('word-input');
+    const word = input.value.trim();
+    if (!word) return;
+    push(ref(db, 'words'), { word: word.toLowerCase(), ts: Date.now() });
+    input.value = '';
+    document.getElementById('thanks').style.display = 'block';
+    setTimeout(() => document.getElementById('thanks').style.display = 'none', 2000);
+  };
+
+  onValue(ref(db, 'words'), (snapshot) => {
+    const counts = {};
+    snapshot.forEach(child => {
+      const w = child.val().word;
+      counts[w] = (counts[w] || 0) + 1;
+    });
+    renderCloud(counts);
+    document.getElementById('word-count').textContent = Object.values(counts).reduce((a,b)=>a+b,0);
+  });
+
+  function renderCloud(counts) {
+    const container = document.getElementById('word-cloud');
+    if (!container) return;
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    const max = sorted[0]?.[1] || 1;
+    container.innerHTML = '';
+    const colors = ['#185FA5','#0C447C','#1C7293','#028090','#00A896','#185FA5','#378ADD'];
+    sorted.forEach(([word, count], i) => {
+      const size = 14 + (count / max) * 36;
+      const span = document.createElement('span');
+      span.textContent = word;
+      span.style.cssText = `font-size:${size}px;color:${colors[i%colors.length]};font-weight:${count>1?'600':'400'};margin:4px 8px;display:inline-block;transition:all 0.3s;`;
+      container.appendChild(span);
+    });
+    if (sorted.length === 0) {
+      container.innerHTML = '<span style="color:#aaa;font-size:14px;">En attente des premiers mots...</span>';
+    }
+  }
+  renderCloud({});
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #F0F4F8; color: #1a1a2e; min-height: 100vh; }
+
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid #e8ecf0;
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-size: 18px; font-weight: 700; color: #185FA5; letter-spacing: -0.5px; }
+  .logo span { color: #1a1a2e; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .badge { background: #E6F1FB; color: #185FA5; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .user-avatar { width: 34px; height: 34px; background: #185FA5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+  .page-title { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e8ecf0; }
+  .kpi-label { font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .kpi-change { font-size: 12px; font-weight: 500; }
+  .up { color: #00A896; }
+  .down { color: #E24B4A; }
+
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+  .card { background: #fff; border-radius: 12px; border: 1px solid #e8ecf0; padding: 24px; }
+  .card-title { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: #aaa; margin-bottom: 18px; }
+
+  .chart-wrap { position: relative; height: 200px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.4px; padding: 0 0 10px; border-bottom: 1px solid #f0f0f0; }
+  tbody td { padding: 12px 0; border-bottom: 1px solid #f7f7f7; color: #333; }
+  tbody tr:last-child td { border-bottom: none; }
+  .ticker { font-weight: 600; color: #185FA5; }
+  .tag-risk { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .risk-low { background: #E1F5EE; color: #0F6E56; }
+  .risk-med { background: #FAEEDA; color: #854F0B; }
+  .risk-high { background: #FCEBEB; color: #A32D2D; }
+
+  .alert-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f7f7f7; font-size: 13px; }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-red { background: #E24B4A; }
+  .dot-amber { background: #EF9F27; }
+  .dot-green { background: #1D9E75; }
+
+  /* WORD CLOUD SECTION */
+  .wc-card { background: #fff; border-radius: 12px; border: 2px solid #185FA5; padding: 24px; margin-bottom: 24px; }
+  .wc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .wc-title { font-size: 15px; font-weight: 700; color: #185FA5; }
+  .wc-count { font-size: 12px; color: #888; }
+  .word-cloud { min-height: 80px; line-height: 1.8; padding: 8px 0; }
+  .wc-input-row { display: flex; gap: 8px; margin-top: 16px; border-top: 1px solid #f0f0f0; padding-top: 16px; }
+  .wc-input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; }
+  .wc-input:focus { border-color: #185FA5; }
+  .wc-btn { background: #185FA5; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .wc-btn:hover { background: #0C447C; }
+  .thanks { display: none; font-size: 12px; color: #00A896; font-weight: 500; align-self: center; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Portfolio<span>Track</span></div>
+  <div class="topbar-right">
+    <span class="badge">DEMO · FICTIF</span>
+    <div class="user-avatar">FC</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-title">Vue d'ensemble</div>
+  <div class="page-sub">Données fictives — mise à jour simulée · Avril 2026</div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Actifs sous gestion</div>
+      <div class="kpi-value">€ 4,2M</div>
+      <div class="kpi-change up">▲ +2,4% ce mois</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Performance YTD</div>
+      <div class="kpi-value">+8,7%</div>
+      <div class="kpi-change up">▲ vs benchmark +5,1%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Positions ouvertes</div>
+      <div class="kpi-value">24</div>
+      <div class="kpi-change down">▼ 3 en alerte</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Score de risque</div>
+      <div class="kpi-value">6,2 / 10</div>
+      <div class="kpi-change" style="color:#888;">Modéré</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Évolution du portefeuille</div>
+      <div class="card-sub">12 derniers mois — données fictives</div>
+      <div class="chart-wrap">
+        <canvas id="perf-chart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Allocation par classe</div>
+      <div class="card-sub">Répartition actuelle</div>
+      <div class="chart-wrap">
+        <canvas id="alloc-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">Positions principales</div>
+    <div class="card-sub">Top 6 par valeur de marché</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Secteur</th>
+          <th>Valeur</th>
+          <th>Perf. 1M</th>
+          <th>Risque</th>
+          <th>Poids</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="ticker">BNP</td><td>Banque</td><td>€ 412 000</td><td class="up">+3,2%</td><td><span class="tag-risk risk-low">Faible</span></td><td>9,8%</td></tr>
+        <tr><td class="ticker">LVMH</td><td>Luxe</td><td>€ 387 000</td><td class="up">+5,7%</td><td><span class="tag-risk risk-low">Faible</span></td><td>9,2%</td></tr>
+        <tr><td class="ticker">ENGI</td><td>Énergie</td><td>€ 298 000</td><td class="down">-1,4%</td><td><span class="tag-risk risk-med">Modéré</span></td><td>7,1%</td></tr>
+        <tr><td class="ticker">SAN</td><td>Santé</td><td>€ 276 000</td><td class="up">+2,1%</td><td><span class="tag-risk risk-low">Faible</span></td><td>6,6%</td></tr>
+        <tr><td class="ticker">ORA</td><td>Télécom</td><td>€ 198 000</td><td class="down">-3,8%</td><td><span class="tag-risk risk-high">Élevé</span></td><td>4,7%</td></tr>
+        <tr><td class="ticker">AIR</td><td>Aéro</td><td>€ 176 000</td><td class="up">+1,9%</td><td><span class="tag-risk risk-med">Modéré</span></td><td>4,2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-3">
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-title">Alertes actives</div>
+      <div class="card-sub">Surveillance automatique des seuils</div>
+      <div class="alert-row"><div class="alert-dot dot-red"></div><div><strong>ORA</strong> — Seuil de perte atteint (−3,8%). Action recommandée.</div></div>
+      <div class="alert-row"><div class="alert-dot dot-amber"></div><div><strong>ENGI</strong> — Volatilité en hausse. Surveiller sur 5 jours.</div></div>
+      <div class="alert-row"><div class="alert-dot dot-green"></div><div><strong>LVMH</strong> — Performance exceptionnelle ce mois (+5,7%).</div></div>
+      <div class="alert-row"><div class="alert-dot dot-amber"></div><div><strong>Liquidités</strong> — Part cash sous le seuil cible (8% vs 12%).</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Répartition géographique</div>
+      <div class="card-sub">Par zone d'exposition</div>
+      <div class="chart-wrap" style="height:160px;">
+        <canvas id="geo-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORD CLOUD PARTICIPATIF -->
+  <div class="wc-card">
+    <div class="wc-header">
+      <div class="wc-title">Mur participatif — Votre mot sur le vibe coding</div>
+      <div class="wc-count"><span id="word-count">0</span> réponses</div>
+    </div>
+    <div class="word-cloud" id="word-cloud"></div>
+    <div class="wc-input-row">
+      <input class="wc-input" id="word-input" type="text" placeholder="Tapez un mot et validez..." maxlength="30"
+        onkeydown="if(event.key==='Enter') submitWord()">
+      <button class="wc-btn" onclick="submitWord()">Envoyer</button>
+      <span class="thanks" id="thanks">Merci !</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Perf chart
+new Chart(document.getElementById('perf-chart'), {
+  type: 'line',
+  data: {
+    labels: ['Avr','Mai','Jui','Jul','Aoû','Sep','Oct','Nov','Déc','Jan','Fév','Mar'],
+    datasets: [{
+      label: 'Portefeuille',
+      data: [100, 102, 101, 105, 103, 107, 106, 110, 108, 112, 111, 108.7],
+      borderColor: '#185FA5', backgroundColor: 'rgba(24,95,165,0.08)',
+      borderWidth: 2, pointRadius: 3, fill: true, tension: 0.4
+    },{
+      label: 'Benchmark',
+      data: [100, 101, 100.5, 102, 101, 103, 102, 104, 103, 105, 104, 105.1],
+      borderColor: '#ccc', borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.4, borderDash: [4,4]
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 } } }, y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 } } } } }
+});
+
+// Alloc chart
+new Chart(document.getElementById('alloc-chart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Actions EU', 'Obligations', 'Immobilier', 'Cash', 'Alternatif'],
+    datasets: [{ data: [52, 22, 12, 8, 6], backgroundColor: ['#185FA5','#378ADD','#85B7EB','#B5D4F4','#E6F1FB'], borderWidth: 0 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } }, cutout: '65%' }
+});
+
+// Geo chart
+new Chart(document.getElementById('geo-chart'), {
+  type: 'bar',
+  data: {
+    labels: ['France', 'EU', 'USA', 'EM', 'Autre'],
+    datasets: [{ data: [38, 28, 18, 10, 6], backgroundColor: '#185FA5', borderRadius: 4 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, callback: v => v+'%' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+});
+</script>
+</body>
+</html>
