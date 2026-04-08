@@ -217,6 +217,14 @@
     </table>
   </div>
 
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-title">Performance comparée des positions</div>
+    <div class="card-sub">Rendement 1 mois — vert = positif, rouge = négatif</div>
+    <div class="chart-wrap" style="height:220px;">
+      <canvas id="pos-perf-chart"></canvas>
+    </div>
+  </div>
+
   <div class="grid-3">
     <div class="card" style="grid-column: span 2;">
       <div class="card-title">Alertes actives</div>
@@ -280,6 +288,34 @@ new Chart(document.getElementById('alloc-chart'), {
     datasets: [{ data: [52, 22, 12, 8, 6], backgroundColor: ['#185FA5','#378ADD','#85B7EB','#B5D4F4','#E6F1FB'], borderWidth: 0 }]
   },
   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } }, cutout: '65%' }
+});
+
+// Position performance chart
+const posLabels = ['BNP', 'LVMH', 'ENGI', 'SAN', 'ORA', 'AIR'];
+const posData = [3.2, 5.7, -1.4, 2.1, -3.8, 1.9];
+const posColors = posData.map(v => v >= 0 ? '#00A896' : '#E24B4A');
+new Chart(document.getElementById('pos-perf-chart'), {
+  type: 'bar',
+  data: {
+    labels: posLabels,
+    datasets: [{
+      data: posData,
+      backgroundColor: posColors,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => (ctx.raw >= 0 ? '+' : '') + ctx.raw.toFixed(1) + '%' } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' }, color: '#185FA5' } },
+      y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 }, callback: v => (v >= 0 ? '+' : '') + v + '%' } }
+    }
+  }
 });
 
 // Geo chart
