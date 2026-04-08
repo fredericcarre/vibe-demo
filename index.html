@@ -165,13 +165,13 @@
     </div>
     <div class="kpi">
       <div class="kpi-label">Positions ouvertes</div>
-      <div class="kpi-value">24</div>
-      <div class="kpi-change down">▼ 3 en alerte</div>
+      <div class="kpi-value">27</div>
+      <div class="kpi-change down">▼ 4 en alerte</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Score de risque</div>
-      <div class="kpi-value">6,2 / 10</div>
-      <div class="kpi-change" style="color:#888;">Modéré</div>
+      <div class="kpi-value">6,8 / 10</div>
+      <div class="kpi-change" style="color:#EF9F27;">Modéré-Haut</div>
     </div>
   </div>
 
@@ -194,7 +194,7 @@
 
   <div class="card" style="margin-bottom:24px;">
     <div class="card-title">Positions principales</div>
-    <div class="card-sub">Top 6 par valeur de marché</div>
+    <div class="card-sub">Top 9 par valeur de marché — Actions & Crypto</div>
     <table>
       <thead>
         <tr>
@@ -213,6 +213,10 @@
         <tr><td class="ticker">SAN</td><td>Santé</td><td>€ 276 000</td><td class="down">-5,2%</td><td><span class="tag-risk risk-med">Modéré</span></td><td>6,6%</td></tr>
         <tr><td class="ticker">ORA</td><td>Télécom</td><td>€ 198 000</td><td class="up">+5,8%</td><td><span class="tag-risk risk-low">Faible</span></td><td>4,7%</td></tr>
         <tr><td class="ticker">AIR</td><td>Aéro</td><td>€ 176 000</td><td class="down">-8,4%</td><td><span class="tag-risk risk-high">Élevé</span></td><td>4,2%</td></tr>
+        <tr><td colspan="6" style="padding:8px 0 4px;font-size:11px;font-weight:600;color:#E8930C;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #f0f0f0;">₿ Crypto-actifs</td></tr>
+        <tr><td class="ticker" style="color:#F7931A;">BTC</td><td>Crypto</td><td>€ 105 000</td><td class="up">+2,0%</td><td><span class="tag-risk risk-med">Modéré</span></td><td>2,5%</td></tr>
+        <tr><td class="ticker" style="color:#627EEA;">ETH</td><td>Crypto</td><td>€ 63 000</td><td class="down">-2,1%</td><td><span class="tag-risk risk-high">Élevé</span></td><td>1,5%</td></tr>
+        <tr><td class="ticker" style="color:#9945FF;">SOL</td><td>Crypto</td><td>€ 42 000</td><td class="down">-3,5%</td><td><span class="tag-risk risk-high">Élevé</span></td><td>1,0%</td></tr>
       </tbody>
     </table>
   </div>
@@ -232,6 +236,7 @@
       <div class="alert-row"><div class="alert-dot dot-red"></div><div><strong>LVMH</strong> — Forte baisse ce mois (−11,9%). Surveillance renforcée.</div></div>
       <div class="alert-row"><div class="alert-dot dot-red"></div><div><strong>AIR</strong> — Seuil de perte atteint (−8,4%). Action recommandée.</div></div>
       <div class="alert-row"><div class="alert-dot dot-green"></div><div><strong>ENGI</strong> — Performance exceptionnelle ce mois (+9,2%).</div></div>
+      <div class="alert-row"><div class="alert-dot dot-amber"></div><div><strong>SOL</strong> — 6 mois consécutifs de baisse (−3,5%). Réévaluer l'exposition.</div></div>
       <div class="alert-row"><div class="alert-dot dot-amber"></div><div><strong>Liquidités</strong> — Part cash sous le seuil cible (8% vs 12%).</div></div>
     </div>
     <div class="card">
@@ -284,15 +289,15 @@ new Chart(document.getElementById('perf-chart'), {
 new Chart(document.getElementById('alloc-chart'), {
   type: 'doughnut',
   data: {
-    labels: ['Actions EU', 'Obligations', 'Immobilier', 'Cash', 'Alternatif'],
-    datasets: [{ data: [52, 22, 12, 8, 6], backgroundColor: ['#185FA5','#378ADD','#85B7EB','#B5D4F4','#E6F1FB'], borderWidth: 0 }]
+    labels: ['Actions EU', 'Obligations', 'Immobilier', 'Cash', 'Crypto'],
+    datasets: [{ data: [47, 22, 12, 8, 5], backgroundColor: ['#185FA5','#378ADD','#85B7EB','#B5D4F4','#F7931A'], borderWidth: 0 }]
   },
   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } } }, cutout: '65%' }
 });
 
 // Position performance chart
-const posLabels = ['BNP', 'LVMH', 'ENGI', 'SAN', 'ORA', 'AIR'];
-const posData = [-5.5, -11.9, 9.2, -5.2, 5.8, -8.4];
+const posLabels = ['BNP', 'LVMH', 'ENGI', 'SAN', 'ORA', 'AIR', 'BTC', 'ETH', 'SOL'];
+const posData = [-5.5, -11.9, 9.2, -5.2, 5.8, -8.4, 2.0, -2.1, -3.5];
 const posColors = posData.map(v => v >= 0 ? '#00A896' : '#E24B4A');
 new Chart(document.getElementById('pos-perf-chart'), {
   type: 'bar',
